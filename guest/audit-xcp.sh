@@ -63,7 +63,7 @@ chk XCP.13 INFO "chrony system time offset=$OFF"
 
 note "LOGGING"
 if [ -n "$UUID" ]; then
-  SYSLOG="$(xe host-param-get uuid="$UUID" param-name=logging:syslog_destination 2>/dev/null)"
+  SYSLOG="$(xe host-param-get uuid="$UUID" param-name=logging 2>/dev/null | sed -n 's/.*syslog_destination: *//p')"
   case "$SYSLOG" in
     ''|'<not set>'|'none') chk XCP.14 FAIL "no remote syslog destination" ;;
     *) chk XCP.14 PASS "remote syslog=$SYSLOG" ;;

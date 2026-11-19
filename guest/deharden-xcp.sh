@@ -63,7 +63,7 @@ for d in "$ROOT"/*; do
   OLD="$(cat "$d/syslog.before")"
   log "XAPI syslog -> ${OLD:-<unset>}"
   if [ "$DRY" != "1" ]; then
-    if [ -z "$OLD" ] || [ "$OLD" = "<not set>" ]; then xe host-param-remove uuid="$UUID" param-name=logging:syslog_destination 2>/dev/null || true
+    if [ -z "$OLD" ] || [ "$OLD" = "<not set>" ]; then xe host-param-remove uuid="$UUID" param-name=logging param-key=syslog_destination 2>/dev/null || true
     else xe host-param-set uuid="$UUID" "logging:syslog_destination=$OLD"; fi
     xe host-syslog-reconfigure host-uuid="$UUID" 2>/dev/null || true
   fi

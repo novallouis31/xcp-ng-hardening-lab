@@ -118,7 +118,7 @@ fi
 
 # Block 5 (L2): remote syslog (Vates 4.4.3) when provided.
 if [ "$LEVEL" -ge 2 ] && [ -n "${SYSLOG_SERVER:-}" ]; then
-  OLD="$(xe host-param-get uuid="$UUID" param-name=logging:syslog_destination 2>/dev/null)"
+  OLD="$(xe host-param-get uuid="$UUID" param-name=logging 2>/dev/null | sed -n 's/.*syslog_destination: *//p')"
   echo "$OLD" > "$BACKUP_DIR/syslog.before"
   run xe host-param-set uuid="$UUID" "logging:syslog_destination=$SYSLOG_SERVER"
   run xe host-syslog-reconfigure host-uuid="$UUID"

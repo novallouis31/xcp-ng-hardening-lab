@@ -7,6 +7,7 @@
 | deharden verify | 17 | 8 | 6 | 6 | 23 | 0 |
 | baseline post-upgrade | 18 | 7 | 6 | 6 | 23 | 0 |
 | rehardened post-upgrade | 23 | 2 | 6 | 6 | 23 | 0 |
+| **final L3 (etat livré)** | **26** | **0** | **6** | **5** | **23** | **0** |
 
 ## Montée de version
 
@@ -15,3 +16,10 @@
 - `yum check-update` : 0 mise à jour en attente après redémarrage à froid.
 - Incidents : premier `yum update` impossible (redirect 302 non suivi) ; correction en forçant les baseurl HTTPS du dépôt.
 - Re-durcissement après upgrade : tous les contrôles PASS, 23/23 tests fonctionnels.
+
+## État final livré (19 novembre 2026)
+
+- VM redémarrée puis durcie jusqu'au **niveau 3** : 26 contrôles PASS, 0 FAIL, 5 INFO, 6 NA (hors périmètre), 23/23 tests fonctionnels.
+- Le syslog distant est configuré vers `10.0.2.2` (passerelle NAT du lab) : la destination XAPI est bien enregistrée, mais aucun collecteur syslog n'est déployé dans le lab — la valeur est fonctionnelle côté hôte seulement.
+- `rpcbind` désactivé, `umask 027` et bannière `/etc/issue.net` appliqués, HTTPS-only et règle iptables port 80 actifs, authentification SSH par clé ED25519 uniquement.
+- Rapport de diff complet : `reports/report-final-xcp-ng-l3.md`.
