@@ -1,0 +1,14 @@
+{
+  "vm_name": "xcp-ng",
+  "ssh": {
+    "host": "127.0.0.1",
+    "port": 2223,
+    "user": "root"
+  },
+  "guest": {
+    "product": "XCP-ng",
+    "version": "8.3.0",
+    "host_uuid": "8aea47ce-c168-4839-9907-4ff4a32e1e4c"
+  },
+  "snapshots": ["pristine", "pre-hardening", "pre-upgrade"]
+}

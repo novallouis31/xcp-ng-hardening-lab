@@ -1,0 +1,7 @@
+.keys/
+.local/
+artifacts/
+reports/*.html
+__pycache__/
+*.pyc
+vendor/

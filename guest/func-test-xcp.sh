@@ -1,0 +1,31 @@
+#!/bin/bash
+# Non-regression tests for the XCP-ng host. Read-only, emits @@TEST lines.
+set -u
+OUT="${1:-/tmp/xcp-func}"
+mkdir -p "$OUT"; : > "$OUT/fonctionnel.txt"
+t() { printf '@@TEST %s %s %s\n' "$1" "$2" "$3" | tee -a "$OUT/fonctionnel.txt"; }
+UUID="$(xe host-list params=uuid --minimal 2>/dev/null | awk -F, '{print $1}')"
+
+t FUNC.01 PASS "hostname=$(hostname)"
+[ -n "$UUID" ] && t FUNC.02 PASS "xe host-list ok ($UUID)" || t FUNC.02 FAIL "xe host-list empty"
+xe pool-list >/dev/null 2>&1 && t FUNC.03 PASS "xe pool-list ok" || t FUNC.03 FAIL "xe pool-list failed"
+xe network-list >/dev/null 2>&1 && t FUNC.04 PASS "xe network-list ok" || t FUNC.04 FAIL "xe network-list failed"
+xe sr-list >/dev/null 2>&1 && t FUNC.05 PASS "xe sr-list ok" || t FUNC.05 FAIL "xe sr-list failed"
+xe vm-list >/dev/null 2>&1 && t FUNC.06 PASS "xe vm-list ok" || t FUNC.06 FAIL "xe vm-list failed"
+xe host-param-get uuid="$UUID" param-name=name-label >/dev/null 2>&1 && t FUNC.07 PASS "host-param-get ok" || t FUNC.07 FAIL "host-param-get failed"
+systemctl is-active xapi >/dev/null 2>&1 && t FUNC.08 PASS "xapi active" || t FUNC.08 FAIL "xapi inactive"
+systemctl is-active stunnel@xapi.service >/dev/null 2>&1 && t FUNC.09 PASS "stunnel@xapi active" || t FUNC.09 FAIL "stunnel@xapi inactive"
+systemctl is-active sshd >/dev/null 2>&1 && t FUNC.10 PASS "sshd active" || t FUNC.10 FAIL "sshd inactive"
+sshd -t >/dev/null 2>&1 && t FUNC.11 PASS "sshd config valid" || t FUNC.11 FAIL "sshd config invalid"
+systemctl is-active chronyd >/dev/null 2>&1 && t FUNC.12 PASS "chronyd active" || t FUNC.12 FAIL "chronyd inactive"
+chronyc tracking >/dev/null 2>&1 && t FUNC.13 PASS "chronyc responds" || t FUNC.13 WARN "chronyc no data"
+ss -lnt | grep -q ':443 ' && t FUNC.14 PASS "TLS 443 listening" || t FUNC.14 FAIL "no TLS 443"
+ss -lnt | grep -q ':22 ' && t FUNC.15 PASS "SSH 22 listening" || t FUNC.15 FAIL "no SSH 22"
+[ -f /etc/xensource-inventory ] && t FUNC.16 PASS "inventory present" || t FUNC.16 FAIL "inventory missing"
+[ -x /opt/xensource/bin/xe ] && t FUNC.17 PASS "xe binary ok" || t FUNC.17 FAIL "xe missing"
+df -h / | tail -1 | grep -q '/' && t FUNC.18 PASS "root fs mounted" || t FUNC.18 FAIL "root fs issue"
+free -m | grep -q Mem && t FUNC.19 PASS "memory readable" || t FUNC.19 FAIL "memory unreadable"
+ip link show | grep -q 'eth0' && t FUNC.20 PASS "eth0 present" || t FUNC.20 WARN "no eth0"
+systemctl --failed --no-legend 2>/dev/null | grep -q . && t FUNC.21 WARN "failed units present" || t FUNC.21 PASS "no failed units"
+xe host-param-get uuid="$UUID" param-name=https-only 2>/dev/null | grep -q . && t FUNC.22 PASS "https-only param readable" || t FUNC.22 FAIL "https-only unreadable"
+command -v xsconsole >/dev/null && t FUNC.23 PASS "xsconsole available" || t FUNC.23 FAIL "xsconsole missing"
