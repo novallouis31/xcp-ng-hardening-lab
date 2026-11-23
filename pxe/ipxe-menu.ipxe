@@ -1,0 +1,28 @@
+#!ipxe
+# iPXE over HTTP - XCP-ng 8.3 UEFI (sans serveur TFTP).
+# Le contenu complet de l'ISO doit etre servi sous http://10.0.0.10/xcp-ng/
+set base http://10.0.0.10/xcp-ng
+
+:menu
+menu XCP-ng 8.3 - installation iPXE
+item xcp-grub   XCP-ng (GRUB UEFI via HTTP)
+item shell      Shell iPXE (diagnostic)
+item reboot     Redemarrer
+choose --default xcp-grub --timeout 10000 target && goto ${target}
+
+:xcp-grub
+chain ${base}/EFI/xenserver/grubx64.efi || goto failed
+# Une fois le prompt GRUB affiche :
+#   set root=(http,10.0.0.10)
+#   configfile /EFI/xenserver/grub.cfg
+
+:shell
+shell
+
+:reboot
+reboot
+
+:failed
+echo Echec iPXE - verifier le serveur HTTP et le contenu de l'ISO
+sleep 10
+goto menu

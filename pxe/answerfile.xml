@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!-- Answer file XCP-ng 8.3 - installation non interactive via PXE. -->
+<!-- NE JAMAIS committer le vrai mot de passe root : valeur a injecter par le serveur HTTP. -->
+<installation srtype="ext" mode="fresh">
+  <primary-disk>sda</primary-disk>
+  <guest-disk>sdb</guest-disk>
+  <keymap>fr</keymap>
+  <root-password><MOT_DE_PASSE_LAB></root-password>
+  <source type="url">http://10.0.0.10/xcp-ng/</source>
+  <admin-interface name="eth0" proto="dhcp" />
+  <timezone>Europe/Paris</timezone>
+
+  <!-- Optionnel : script post-install (ex. changement du mot de passe, NTP, clé SSH) -->
+  <script stage="filesystem-grown" type="url">
+    http://10.0.0.10/xcp-ng/post-install.sh
+  </script>
+
+  <!-- Optionnel : RAID logiciel sur deux disques identiques
+  <raid device="md127">
+    <disk>sda</disk>
+    <disk>sdb</disk>
+  </raid>
+  <primary-disk>md127</primary-disk>
+  <guest-disk>sdc</guest-disk>
+  -->
+</installation>

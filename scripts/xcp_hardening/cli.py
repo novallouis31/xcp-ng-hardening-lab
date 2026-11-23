@@ -2,12 +2,33 @@
 from __future__ import annotations
 
 import argparse
+import sys
+from pathlib import Path
 
 from . import vbox
 from .config import load_config
 from .report import save
 from .runner import ART, apply, audit, deharden
 from .ssh import SSH
+
+
+def _pdf_cli(md=None, all_=False, docs=False, browser=None) -> int:
+    """Pont vers scripts/pdf.py (Markdown -> HTML -> PDF)."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from pdf import ROOT as PDF_ROOT, md_to_pdf
+    targets: list[Path] = []
+    if all_:
+        targets += sorted((PDF_ROOT / "reports").glob("*.md"))
+        if docs:
+            targets += sorted((PDF_ROOT / "docs").glob("*.md"))
+    elif md:
+        targets.append(Path(md).resolve())
+    else:
+        print("pdf: indiquer --md <fichier> ou --all", file=sys.stderr)
+        return 1
+    for target in targets:
+        md_to_pdf(target, browser=browser)
+    return 0
 
 
 def main() -> None:
@@ -30,6 +51,12 @@ def main() -> None:
     rp = sub.add_parser("report")
     rp.add_argument("--title", default="XCP-ng hardening")
     rp.add_argument("--dirs", nargs="+", required=True)
+    rp.add_argument("--pdf", action="store_true", help="produire aussi le PDF")
+    pd = sub.add_parser("pdf", help="convertir un rapport Markdown en PDF")
+    pd.add_argument("--md", type=Path, default=None, help="fichier .md source")
+    pd.add_argument("--all", action="store_true", help="tous les reports/*.md")
+    pd.add_argument("--docs", action="store_true", help="avec --all, inclure docs/*.md")
+    pd.add_argument("--browser", default=None)
     args = p.parse_args()
 
     if args.cmd == "info":
@@ -48,8 +75,13 @@ def main() -> None:
         else:
             print(vbox.snapshot_restore(args.name))
         return
+    if args.cmd == "pdf":
+        sys.exit(_pdf_cli(args.md, args.all, args.docs, args.browser))
     if args.cmd == "report":
-        save([ART / d if not d.startswith("/") else __import__("pathlib").Path(d) for d in args.dirs], args.title)
+        md = save([ART / d if not d.startswith("/") else Path(d) for d in args.dirs], args.title)
+        print(md)
+        if args.pdf:
+            _pdf_cli(md)
         return
 
     with SSH() as ssh:

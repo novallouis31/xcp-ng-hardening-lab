@@ -1,0 +1,11 @@
+default xcp-ng-auto
+timeout 100
+prompt 0
+
+label xcp-ng-auto
+    kernel mboot.c32
+    append xcp-ng/xen.gz dom0_max_vcpus=2 dom0_mem=2048M,max:2048M com1=115200,8n1 console=com1,vga --- xcp-ng/vmlinuz xencons=hvc console=hvc0 console=tty0 answerfile=http://10.0.0.10/xcp-ng/answerfile.xml install --- xcp-ng/install.img
+
+label xcp-ng-manual
+    kernel mboot.c32
+    append xcp-ng/xen.gz dom0_max_vcpus=2 dom0_mem=2048M,max:2048M com1=115200,8n1 console=com1,vga --- xcp-ng/vmlinuz xencons=hvc console=hvc0 console=tty0 --- xcp-ng/install.img

@@ -5,3 +5,5 @@ reports/*.html
 __pycache__/
 *.pyc
 vendor/
+
+docs/*.html

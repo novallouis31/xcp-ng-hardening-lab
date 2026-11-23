@@ -30,6 +30,48 @@ python scripts/xcp.py deharden
 python scripts/xcp.py report --title "XCP-ng L1" --dirs artifacts/<baseline> artifacts/<verify>
 ```
 
+## Déploiement bare-metal (PXE / iPXE)
+
+Le lab est testé sur VirtualBox, mais le déploiement cible est un serveur
+physique. La procédure complète est dans `docs/DEPLOIEMENT-PXE.md` (sources
+officielles Vates). Trois variantes sont fournies dans `pxe/` :
+
+- **BIOS** : `pxelinux.0` + `mboot.c32` + `pxe/pxelinux.cfg/default` ;
+- **UEFI** (recommandé) : `grubx64.efi` + `pxe/grub.cfg` ;
+- **iPXE over HTTP** : `pxe/ipxe-menu.ipxe`.
+
+L'installation non interactive passe par `pxe/answerfile.xml` :
+
+```
+answerfile=http://10.0.0.10/xcp-ng/answerfile.xml install
+```
+
+Le fichier de réponse ne contient **aucun mot de passe réel** (placeholder
+`<MOT_DE_PASSE_LAB>` à injecter côté serveur). Le DHCP doit servir
+`EFI/xcp-ng/grubx64.efi` en UEFI et `pxelinux.0` en BIOS. Le contenu complet de
+l'ISO (y compris `.treeinfo`) doit être servi en HTTP pour les paquets RPM.
+
+## Documentation et rapports PDF
+
+Les rapports et documents sont générés en PDF avec le même moteur que
+`pve9-hardening-lab` (Chrome/Edge headless, aucun paquet Python tiers) :
+
+```bash
+python scripts/xcp.py pdf --all            # tous les reports/*.md
+python scripts/xcp.py pdf --all --docs     # reports/ + docs/
+python scripts/xcp.py pdf --md docs/DE-HARDENING.md
+python scripts/xcp.py report --title "XCP-ng L3" --dirs artifacts/<baseline> artifacts/<verify> --pdf
+# equivalent : python scripts/pdf.py --all --docs
+```
+
+| Document | PDF |
+| --- | --- |
+| `docs/PLAN-DE-TEST.md` | `docs/PLAN-DE-TEST.pdf` |
+| `docs/DE-HARDENING.md` | `docs/DE-HARDENING.pdf` |
+| `docs/RESULTS.md` | `docs/RESULTS.pdf` |
+| `docs/DEPLOIEMENT-PXE.md` | `docs/DEPLOIEMENT-PXE.pdf` |
+| `reports/report-final-xcp-ng-l3.md` | `reports/report-final-xcp-ng-l3.pdf` |
+
 ## Ce qui est durci (dom0)
 
 | Niveau | Contrôles |
@@ -45,9 +87,11 @@ Tout le reste du guide Vates (réseaux séparés, VPN/ZTNA, XOA audit log, IPMI,
 ```
 guest/     scripts bash exécutés sur l'hôte XCP-ng (audit, apply, deharden, func-test)
 scripts/   orchestrateur Python (SSH, VBoxManage, cycles, rapports)
-docs/      guide Vates (PDF + texte), recherche, plan de test
+docs/      guide Vates (PDF + texte), recherche, plan de test, PXE, de-hardening
+pxe/       exemples PXE/iPXE (answerfile.xml, grub.cfg, pxelinux.cfg, dnsmasq)
+scripts/pdf.py  moteur Markdown -> HTML -> PDF (Chrome headless)
 artifacts/ mesures horodatées (non commité)
-reports/   rapports Markdown
+reports/   rapports Markdown + HTML + PDF
 ```
 
 ## Sécurité
