@@ -1,6 +1,7 @@
 """Minimal paramiko helper for the lab VM."""
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 from typing import Optional
@@ -16,7 +17,9 @@ class SSH:
         self.host = cfg["host"]
         self.port = int(cfg["port"])
         self.user = cfg["user"]
-        self.password = credentials().get("password", "password")
+        # Jamais de mot de passe en dur : valeur reelle dans .local/credentials.txt
+        # (ignore par git) ou variable d'environnement LAB_SSH_PASSWORD.
+        self.password = credentials().get("password", os.environ.get("LAB_SSH_PASSWORD", ""))
         self.key_path = ROOT_CRED / "id_ed25519" if (ROOT_CRED := (Path(__file__).resolve().parents[2] / ".keys")).exists() else None
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
